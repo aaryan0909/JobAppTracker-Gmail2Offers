@@ -6,7 +6,7 @@
 
 *Not just a dashboard. A **decision board** that turns a messy inbox into ranked next-actions.*
 
-[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-Try_it-5b8cff?style=for-the-badge)](LIVE_DEMO_URL)
+[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-Try_it-5b8cff?style=for-the-badge)](https://aaryan0909.github.io/career-decision-board/)
 &nbsp;
 ![Python](https://img.shields.io/badge/Python-3.9-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Vanilla JS](https://img.shields.io/badge/JS-Vanilla-f7df1e?style=flat-square&logo=javascript&logoColor=black)
@@ -16,7 +16,7 @@
 
 </div>
 
-> **▶ [Open the live demo](LIVE_DEMO_URL)** — fully interactive, loaded with realistic **anonymized** data. Toggle the time filter, browse the pipeline, insights, network & outreach templates.
+> **▶ [Open the live demo](https://aaryan0909.github.io/career-decision-board/)** — fully interactive, loaded with realistic **anonymized** data. Toggle the time filter, browse the pipeline, insights, network & outreach templates.
 
 ---
 
@@ -123,5 +123,5 @@ bash engine/load_agents.sh              # install the hourly scan + local server
 ---
 
 <div align="center">
-<sub>Built by Aaryan Chawla · MIT licensed · <a href="LIVE_DEMO_URL">live demo</a></sub>
+<sub>Built by Aaryan Chawla · MIT licensed · <a href="https://aaryan0909.github.io/career-decision-board/">live demo</a></sub>
 </div>
