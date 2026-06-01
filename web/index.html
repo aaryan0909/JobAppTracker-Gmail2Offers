@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1120">
+<title>Career Decision Board</title>
+<style>
+  :root{
+    --bg:#0b1120; --panel:#131c31; --panel2:#1b2742; --line:#26324f;
+    --txt:#e7ecf6; --mut:#93a1c0; --acc:#5b8cff; --acc2:#37d39b;
+    --warn:#ffb454; --bad:#ff6b6b; --hot:#ff7a59; --warm:#ffc24b; --cold:#7c8aa8;
+    --r:14px; --shadow:0 6px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  a{color:var(--acc)}
+  .hidden{display:none!important}
+
+  /* ---- gate ---- */
+  #gate{position:fixed;inset:0;background:radial-gradient(1200px 600px at 50% -10%,#1b294a,#0b1120);
+    display:flex;align-items:center;justify-content:center;z-index:50;padding:24px}
+  .gatecard{background:var(--panel);border:1px solid var(--line);border-radius:18px;
+    padding:30px;max-width:380px;width:100%;box-shadow:var(--shadow);text-align:center}
+  .gatecard h1{font-size:20px;margin:8px 0 4px}
+  .gatecard p{color:var(--mut);font-size:13px;margin:0 0 18px}
+  .gatecard input{width:100%;padding:13px 14px;border-radius:11px;border:1px solid var(--line);
+    background:#0e1626;color:var(--txt);font-size:16px;margin-bottom:12px}
+  .btn{background:var(--acc);color:#fff;border:0;border-radius:11px;padding:12px 16px;
+    font-size:15px;font-weight:600;cursor:pointer;width:100%}
+  .btn:active{transform:translateY(1px)}
+  .err{color:var(--bad);font-size:13px;min-height:18px;margin-top:8px}
+  .logo{font-size:30px}
+
+  /* ---- shell ---- */
+  header{position:sticky;top:0;z-index:20;background:rgba(11,17,32,.86);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:14px 18px calc(14px + env(safe-area-inset-top,0));
+    display:flex;align-items:center;justify-content:space-between;gap:10px}
+  header h2{font-size:16px;margin:0;font-weight:700}
+  header .stamp{color:var(--mut);font-size:11px}
+  main{max-width:1180px;margin:0 auto;padding:14px 16px 110px}
+
+  .filterbar{position:sticky;top:0;z-index:18;display:flex;align-items:center;gap:6px;flex-wrap:wrap;
+    background:rgba(11,17,32,.82);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+    padding:9px 16px;max-width:1180px;margin:0 auto}
+  .filterbar .fb-label{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);margin-right:4px}
+  .filterbar button{background:var(--panel2);border:1px solid var(--line);color:var(--mut);
+    font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;cursor:pointer}
+  .filterbar button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+  .filterbar button:active{transform:translateY(1px)}
+
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;display:flex;
+    background:rgba(15,22,40,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line);
+    padding-bottom:env(safe-area-inset-bottom,0)}
+  nav.tabs button{flex:1;background:none;border:0;color:var(--mut);font-size:10.5px;font-weight:600;
+    padding:9px 2px 11px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+  nav.tabs button .ic{font-size:18px;line-height:1}
+  nav.tabs button.on{color:var(--acc)}
+
+  /* ---- bits ---- */
+  .chips{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:13px}
+  .chip .n{font-size:23px;font-weight:800;line-height:1}
+  .chip .l{color:var(--mut);font-size:11px;margin-top:5px}
+  .chip.good .n{color:var(--acc2)} .chip.acc .n{color:var(--acc)} .chip.warn .n{color:var(--warn)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+    padding:15px 16px;margin-bottom:13px;box-shadow:var(--shadow)}
+  .card h3{margin:0 0 4px;font-size:15.5px}
+  .card .detail{color:var(--mut);font-size:13.5px;line-height:1.5}
+  .badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;margin-bottom:8px}
+  .b-opportunity,.b-decision{background:rgba(255,122,89,.16);color:#ff9b7e}
+  .b-strategy,.b-insight{background:rgba(91,140,255,.16);color:#9db9ff}
+  .b-cleanup{background:rgba(255,180,84,.16);color:#ffce8a}
+  .b-network{background:rgba(55,211,155,.16);color:#6ee7be}
+  .b-momentum,.b-prep{background:rgba(124,138,168,.18);color:#b9c5dd}
+  .action{margin-top:10px;font-size:13px;color:var(--acc);font-weight:600}
+  ul.items{list-style:none;margin:11px 0 0;padding:0;display:grid;gap:6px}
+  ul.items li{display:flex;justify-content:space-between;gap:10px;background:var(--panel2);
+    border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13px}
+  ul.items li .sub{color:var(--mut);font-size:12px;white-space:nowrap}
+
+  .sectit{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);
+    margin:22px 2px 10px;font-weight:700}
+  .fnote{font-size:12.5px;color:var(--mut);background:var(--panel2);border:1px solid var(--line);
+    border-radius:10px;padding:9px 12px;margin:2px 0 6px}
+
+  /* kanban */
+  .kanban{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(230px,1fr);gap:12px;overflow-x:auto;
+    padding-bottom:8px;scroll-snap-type:x mandatory}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:11px;scroll-snap-align:start}
+  .col h4{margin:0 0 9px;font-size:12.5px;display:flex;justify-content:space-between}
+  .col h4 .cnt{color:var(--mut)}
+  .app{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin-bottom:8px}
+  .app .co{font-weight:700;font-size:13px}
+  .app .ti{color:var(--mut);font-size:12px;margin:2px 0 6px}
+  .tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:999px;background:#0e1626;
+    border:1px solid var(--line);color:var(--mut);margin-right:5px}
+
+  /* insights bars */
+  .bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .bar .lab{width:140px;font-size:12.5px;flex:none}
+  .bar .track{flex:1;background:#0e1626;border-radius:999px;height:18px;overflow:hidden;border:1px solid var(--line)}
+  .bar .fill{height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));border-radius:999px}
+  .bar .val{width:74px;text-align:right;font-size:12px;color:var(--mut);flex:none}
+
+  /* timeline */
+  .tl{position:relative;padding-left:18px}
+  .tl::before{content:"";position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .tl .ev{position:relative;margin-bottom:14px}
+  .tl .ev::before{content:"";position:absolute;left:-16px;top:5px;width:10px;height:10px;border-radius:50%;
+    background:var(--acc);box-shadow:0 0 0 3px rgba(91,140,255,.18)}
+
+  /* contacts */
+  .contact{display:flex;gap:11px;align-items:flex-start}
+  .av{width:38px;height:38px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:14px;background:linear-gradient(135deg,#33406a,#1d2740);color:#cdd8f3}
+  .warmth{font-size:10px;font-weight:700;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+  .w-hot{background:rgba(255,122,89,.18);color:#ff9b7e}
+  .w-warm{background:rgba(255,194,75,.18);color:#ffd27a}
+  .w-cold{background:rgba(124,138,168,.18);color:#aeb9d2}
+  .mini{font-size:12px;color:var(--acc);background:none;border:1px solid var(--line);
+    border-radius:8px;padding:5px 9px;cursor:pointer;margin-top:8px}
+  .mini:active{transform:translateY(1px)}
+
+  /* templates */
+  pre.tpl{white-space:pre-wrap;background:#0e1626;border:1px solid var(--line);border-radius:10px;
+    padding:12px;font-size:13px;line-height:1.5;color:#d7e0f4;font-family:inherit}
+  .ph{color:var(--warn)}
+
+  @media(max-width:560px){ .chips{grid-template-columns:repeat(2,1fr)} .bar .lab{width:104px} }
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);background:var(--acc2);color:#04231a;
+    font-weight:700;font-size:13px;padding:9px 15px;border-radius:999px;opacity:0;transition:.25s;z-index:40}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- password gate -->
+<div id="gate">
+  <div class="gatecard">
+    <div class="logo">🧭</div>
+    <h1>Career Decision Board</h1>
+    <p>Enter your password to unlock your encrypted board.</p>
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password"
+           inputmode="text" enterkeyhint="go"/>
+    <button class="btn" id="unlock">Unlock</button>
+    <div class="err" id="gerr"></div>
+  </div>
+</div>
+
+<!-- app -->
+<div id="app" class="hidden">
+  <header>
+    <div><h2>🧭 Decision Board</h2><div class="stamp" id="stamp"></div></div>
+    <button class="mini" id="lock">Lock</button>
+  </header>
+  <div class="filterbar" id="filterbar">
+    <span class="fb-label">Time</span>
+    <button data-w="all" class="on">All</button>
+    <button data-w="365">1 year</button>
+    <button data-w="90">3 months</button>
+    <button data-w="30">1 month</button>
+    <button data-w="7">1 week</button>
+  </div>
+  <main>
+    <section id="view-board"></section>
+    <section id="view-pipeline" class="hidden"></section>
+    <section id="view-interviews" class="hidden"></section>
+    <section id="view-insights" class="hidden"></section>
+    <section id="view-network" class="hidden"></section>
+    <section id="view-templates" class="hidden"></section>
+  </main>
+  <nav class="tabs">
+    <button data-v="board" class="on"><span class="ic">🎯</span>Board</button>
+    <button data-v="pipeline"><span class="ic">🗂️</span>Pipeline</button>
+    <button data-v="interviews"><span class="ic">🗓️</span>Interviews</button>
+    <button data-v="insights"><span class="ic">📊</span>Insights</button>
+    <button data-v="network"><span class="ic">🤝</span>Network</button>
+    <button data-v="templates"><span class="ic">✉️</span>Templates</button>
+  </nav>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>(s==null?"":String(s)).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let DATA=null;
+let WIN=null;  // active time filter in days; null = all time
+
+/* ---------- time filter helpers ---------- */
+function refNow(){ return DATA&&DATA.generated_at ? new Date(DATA.generated_at) : new Date(); }
+function inWin(dateStr){
+  if(WIN==null) return true;
+  if(!dateStr) return false;
+  const d=new Date(dateStr+"T00:00:00");
+  if(isNaN(d)) return false;
+  return (refNow()-d) <= WIN*86400000 + 1;
+}
+function segStats(apps,key){
+  const out={};
+  apps.forEach(a=>{const k=a[key]||"Other";const o=out[k]||(out[k]={segment:k,count:0,interviews:0});o.count++;if(a.advanced)o.interviews++;});
+  return Object.values(out).map(o=>({...o,interview_rate:o.count?Math.round(100*o.interviews/o.count):0}))
+    .sort((x,y)=>y.interview_rate-x.interview_rate||y.count-x.count);
+}
+function computeMetrics(apps){
+  const n=apps.length, iv=apps.filter(a=>a.advanced).length, rej=apps.filter(a=>a.rejected).length;
+  return {total:n, interviews:iv, rejected:rej, active:n-rej,
+    interview_rate:n?Math.round(100*iv/n):0,
+    by_family:segStats(apps,"family"), by_source:segStats(apps,"source"), by_seniority:segStats(apps,"seniority")};
+}
+const WINLABEL={null:"all time","365":"last year","90":"last 3 months","30":"last month","7":"last week"};
+
+/* ---------- crypto ---------- */
+const b64=b64s=>{const bin=atob(b64s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;};
+async function decrypt(blob,pw){
+  const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey('raw',enc.encode(pw),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey(
+    {name:'PBKDF2',salt:b64(blob.salt),iterations:blob.iter,hash:'SHA-256'},
+    base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64(blob.iv)},key,b64(blob.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function tryUnlock(){
+  const pw=$("#pw").value; $("#gerr").textContent="";
+  if(!pw){$("#gerr").textContent="Enter a password.";return;}
+  try{
+    const blob=await (await fetch('data.enc.json',{cache:'no-store'})).json();
+    DATA=await decrypt(blob,pw);
+    sessionStorage.setItem('cb_pw',pw);
+    $("#gate").classList.add('hidden'); $("#app").classList.remove('hidden');
+    render();
+  }catch(e){ $("#gerr").textContent="Wrong password or data unavailable."; }
+}
+$("#unlock").onclick=tryUnlock;
+$("#pw").addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
+$("#lock").onclick=()=>{sessionStorage.removeItem('cb_pw');location.reload();};
+window.addEventListener('load',()=>{
+  // public demo: on GitHub Pages (or #demo) auto-load anonymized sample data, no password
+  if(location.hash==='#demo' || location.hostname.endsWith('github.io')){
+    fetch('demo-data.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+      DATA=d;$("#gate").classList.add('hidden');$("#app").classList.remove('hidden');render();
+    }).catch(()=>{$("#gerr").textContent="demo data not found";});
+    return;
+  }
+  // local preview: index.html#preview loads plaintext career_data.json (never deployed)
+  if(location.hash==='#preview'){
+    fetch('career_data.json',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+      DATA=d;$("#gate").classList.add('hidden');$("#app").classList.remove('hidden');render();
+    }).catch(()=>{$("#gerr").textContent="preview data not found";});
+    return;
+  }
+  const s=sessionStorage.getItem('cb_pw');if(s){$("#pw").value=s;tryUnlock();}
+});
+
+/* ---------- toast ---------- */
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1400);}
+function copy(txt){navigator.clipboard.writeText(txt).then(()=>toast("Copied ✓"));}
+
+/* ---------- tabs ---------- */
+$$("nav.tabs button").forEach(b=>b.onclick=()=>{
+  $$("nav.tabs button").forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  ["board","pipeline","interviews","insights","network","templates"].forEach(v=>
+    $("#view-"+v).classList.toggle('hidden',v!==b.dataset.v));
+  window.scrollTo(0,0);
+});
+
+/* ---------- filter wiring ---------- */
+$$("#filterbar button").forEach(b=>b.onclick=()=>{
+  $$("#filterbar button").forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  WIN = b.dataset.w==='all' ? null : parseInt(b.dataset.w,10);
+  render();
+});
+
+/* ---------- render ---------- */
+function render(){
+  const d=DATA;
+  const fApps=d.applications.filter(a=>inWin(a.date_applied));
+  const fIvs =d.interviews.filter(i=>inWin(i.date));
+  const m=computeMetrics(fApps);
+  const flabel=WINLABEL[String(WIN)]||"all time";
+  $("#stamp").textContent="Updated "+new Date(d.generated_at).toLocaleString();
+
+  /* board */
+  let h=`<div class="chips">
+    <div class="chip acc"><div class="n">${m.total}</div><div class="l">Applications</div></div>
+    <div class="chip good"><div class="n">${m.interview_rate}%</div><div class="l">Interview rate</div></div>
+    <div class="chip"><div class="n">${m.active}</div><div class="l">Still active</div></div>
+    <div class="chip warn"><div class="n">${m.rejected}</div><div class="l">Rejected</div></div>
+  </div>`;
+  if(WIN!=null) h+=`<div class="fnote">Showing <b>${flabel}</b> · ${m.total} of ${d.applications.length} applications. Recommendations below consider your full history.</div>`;
+  h+=`<div class="sectit">What to do next</div>`;
+  d.recommendations.forEach(r=>{
+    h+=`<div class="card"><span class="badge b-${r.kind}">${r.kind}</span>
+      <h3>${esc(r.title)}</h3><div class="detail">${esc(r.detail)}</div>`;
+    if(r.items&&r.items.length){h+=`<ul class="items">`+r.items.map(it=>
+      `<li><span>${esc(it.label)}</span><span class="sub">${esc(it.sub||"")}</span></li>`).join("")+`</ul>`;}
+    if(r.action){h+=`<div class="action">→ ${esc(r.action)}</div>`;}
+    h+=`</div>`;
+  });
+  $("#view-board").innerHTML=h;
+
+  /* pipeline kanban */
+  const order=["Applied","Phone Screen","Interview","Round 2","Round 3 – Quick Connect (Cancelled; Offer Pending)","Final Round","Offer Pending","Offer – Declining","Rejected"];
+  const buckets={};
+  fApps.forEach(a=>{(buckets[a.stage]=buckets[a.stage]||[]).push(a);});
+  const stages=[...new Set([...order.filter(s=>buckets[s]),...Object.keys(buckets)])];
+  let p=`<div class="sectit">Pipeline · ${fApps.length} roles${WIN!=null?` · ${flabel}`:""}</div><div class="kanban">`;
+  stages.forEach(s=>{
+    const list=buckets[s]||[];
+    p+=`<div class="col"><h4><span>${esc(s)}</span><span class="cnt">${list.length}</span></h4>`;
+    list.sort((a,b)=>(b.date_applied||"").localeCompare(a.date_applied||""));
+    list.forEach(a=>{p+=`<div class="app"><div class="co">${esc(a.company)}</div>
+      <div class="ti">${esc(a.title)}</div>
+      <span class="tag">${esc(a.family)}</span><span class="tag">${esc(a.source)}</span>
+      ${a.days_since!=null?`<span class="tag">${a.days_since}d</span>`:""}</div>`;});
+    p+=`</div>`;
+  });
+  p+=`</div>`;
+  $("#view-pipeline").innerHTML=p;
+
+  /* interviews */
+  let iv=`<div class="sectit">Interview history · ${fIvs.length}${WIN!=null?` · ${flabel}`:""}</div><div class="tl">`;
+  fIvs.forEach(i=>{iv+=`<div class="ev card" style="margin-left:4px">
+    <div style="font-size:11px;color:var(--mut)">${esc(i.date)}</div>
+    <h3>${esc(i.company)} — <span style="color:var(--mut);font-weight:500">${esc(i.title)}</span></h3>
+    <div class="detail"><b>${esc(i.round)}</b></div>
+    ${i.interviewer?`<div class="detail" style="margin-top:4px">👤 ${esc(i.interviewer)}</div>`:""}
+    ${i.details?`<div class="detail" style="margin-top:4px">${esc(i.details)}</div>`:""}</div>`;});
+  iv+=`</div>`;
+  $("#view-interviews").innerHTML=iv;
+
+  /* insights */
+  const barBlock=(title,rows)=>{
+    let b=`<div class="sectit">${title}</div><div class="card">`;
+    const max=Math.max(100,...rows.map(r=>r.interview_rate));
+    rows.forEach(r=>{b+=`<div class="bar"><div class="lab">${esc(r.segment)}</div>
+      <div class="track"><div class="fill" style="width:${Math.max(3,r.interview_rate/max*100)}%"></div></div>
+      <div class="val">${r.interview_rate}% · ${r.count}</div></div>`;});
+    return b+`</div>`;
+  };
+  let ins=`<div class="chips">
+    <div class="chip acc"><div class="n">${m.interviews}</div><div class="l">Reached interview</div></div>
+    <div class="chip good"><div class="n">${m.interview_rate}%</div><div class="l">Interview rate</div></div>
+    <div class="chip"><div class="n">${m.rejected}</div><div class="l">Rejected</div></div>
+    <div class="chip warn"><div class="n">${m.total}</div><div class="l">Applications</div></div></div>`;
+  if(WIN!=null) ins+=`<div class="fnote">Metrics for <b>${flabel}</b> only.</div>`;
+  ins+=barBlock("Interview rate by job family",m.by_family);
+  ins+=barBlock("By application source (channel)",m.by_source.filter(r=>r.count>=2));
+  ins+=barBlock("By seniority",m.by_seniority);
+  $("#view-insights").innerHTML=ins;
+
+  /* network */
+  let nw=`<div class="sectit">Reach out now · ${d.networking_queue.length}</div>`;
+  d.networking_queue.forEach(c=>nw+=contactCard(c,true));
+  nw+=`<div class="sectit">All contacts · ${d.contacts.length}</div>`;
+  d.contacts.forEach(c=>nw+=contactCard(c,false));
+  $("#view-network").innerHTML=nw;
+
+  /* templates */
+  let tp=`<div class="sectit">Outreach templates · tap to copy</div>`;
+  d.templates.forEach(t=>{
+    const body=esc(t.body).replace(/\{([^}]+)\}/g,'<span class="ph">{$1}</span>');
+    tp+=`<div class="card"><span class="badge b-network">${esc(t.audience)}</span>
+      <h3>${esc(t.name)}</h3><div class="detail">${esc(t.when)}</div>
+      <pre class="tpl">${body}</pre>
+      <button class="mini" onclick='copy(${JSON.stringify(t.body)})'>Copy template</button></div>`;
+  });
+  $("#view-templates").innerHTML=tp;
+}
+
+function contactCard(c,queued){
+  const init=(c.name||"?").split(" ").map(x=>x[0]).slice(0,2).join("");
+  return `<div class="card"><div class="contact">
+    <div class="av">${esc(init)}</div>
+    <div style="flex:1">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+        <b>${esc(c.name)}</b><span class="warmth w-${c.warmth||'cold'}">${esc(c.warmth||'cold')}</span></div>
+      <div class="detail">${esc(c.title)} · ${esc(c.company)}</div>
+      ${c.context?`<div class="detail" style="margin-top:4px">${esc(c.context)}</div>`:""}
+      <div class="detail" style="margin-top:4px">
+        ${c.email?`✉️ ${esc(c.email)} `:""}${c.last_touch?`· last touch ${esc(c.last_touch)}`:""}</div>
+      ${c.email?`<button class="mini" onclick='copy(${JSON.stringify(c.email)})'>Copy email</button>`:""}
+    </div></div></div>`;
+}
+</script>
+</body>
+</html>

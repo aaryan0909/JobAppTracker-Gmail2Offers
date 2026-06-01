@@ -1,0 +1,38 @@
+#!/bin/bash
+# Career Board control panel.  Usage:  ./careerboard <command>
+#   now        run a Gmail scan immediately
+#   status     show agents, last scan time, server health
+#   logs       follow today's scan log
+#   open       open the dashboard in your browser
+#   start      (re)load the launchd agents (server + scheduled scan)
+#   stop       unload the launchd agents
+#   uninstall  stop and remove the launchd agents
+set -e
+U=$(id -u)
+ENG="$HOME/career-tracker/engine"
+LA="$HOME/Library/LaunchAgents"
+PY="/usr/bin/python3"
+case "$1" in
+  now)
+    echo "Triggering a scan now (takes ~2–4 min while it reads Gmail)…"
+    launchctl kickstart -k "gui/$U/com.aaryan.careerboard.scan" 2>/dev/null \
+      || bash "$ENG/run_scan.sh"
+    echo "Started. Watch progress with:  ./careerboard logs" ;;
+  status)
+    echo "── agents ──"; launchctl list | grep careerboard || echo "(not loaded — run ./careerboard start)"
+    echo "── server ──"; curl -s -o /dev/null -w "http://localhost:8765 → HTTP %{http_code}\n" http://localhost:8765/index.html || true
+    echo "── data ──"; $PY -c "import json,os;d=json.load(open(os.path.expanduser('~/career-tracker/engine/store.json')));print('applications:',len(d['applications']),'| interviews:',len(d['interviews']),'| leads:',len(d.get('leads',[])),'| last scan:',d['cursor']['last_scan_iso'])" ;;
+  logs)
+    tail -f "$HOME/career-tracker/logs/scan-$(date +%Y%m%d).log" ;;
+  open)
+    open "http://localhost:8765/index.html#preview" ;;
+  start)
+    bash "$ENG/load_agents.sh" ;;
+  stop)
+    for L in server scan; do launchctl bootout "gui/$U/com.aaryan.careerboard.$L" 2>/dev/null && echo "stopped $L"; done ;;
+  uninstall)
+    for L in server scan; do launchctl bootout "gui/$U/com.aaryan.careerboard.$L" 2>/dev/null; rm -f "$LA/com.aaryan.careerboard.$L.plist"; done
+    echo "Agents removed. Project files left intact in ~/career-tracker." ;;
+  *)
+    echo "Usage: ./careerboard {now|status|logs|open|start|stop|uninstall}" ;;
+esac
