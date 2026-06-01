@@ -6,7 +6,7 @@
 
 *Not just a dashboard. A **decision board** that turns a messy inbox into ranked next-actions.*
 
-[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-Try_it-5b8cff?style=for-the-badge)](https://aaryan0909.github.io/career-decision-board/)
+[![Live Demo](https://img.shields.io/badge/▶_Live_Demo-Try_it-5b8cff?style=for-the-badge)](https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/)
 &nbsp;
 ![Python](https://img.shields.io/badge/Python-3.9-3776AB?style=flat-square&logo=python&logoColor=white)
 ![Vanilla JS](https://img.shields.io/badge/JS-Vanilla-f7df1e?style=flat-square&logo=javascript&logoColor=black)
@@ -16,7 +16,19 @@
 
 </div>
 
-> **▶ [Open the live demo](https://aaryan0909.github.io/career-decision-board/)** — fully interactive, loaded with realistic **anonymized** data. Toggle the time filter, browse the pipeline, insights, network & outreach templates.
+> **▶ [Open the live demo](https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/)** — fully interactive, loaded with realistic **anonymized** data. Toggle the time filter, browse the pipeline, insights, network & outreach templates.
+
+## 📸 See it in action
+
+![The decision board](docs/screenshots/board.png)
+<sub><b>Decision board</b> — ranked next-actions pulled straight from the inbox: active opportunities, offers, stalled apps, contacts to ping.</sub>
+
+| Insights | Pipeline |
+|---|---|
+| ![Insights](docs/screenshots/insights.png) | ![Pipeline](docs/screenshots/pipeline.png) |
+| <sub>What's actually converting — interview rate by job family &amp; channel.</sub> | <sub>Stage-by-stage kanban, filterable by time window.</sub> |
+
+<p align="center"><img src="docs/screenshots/mobile.png" width="270" alt="Mobile view"/><br/><sub>Same board, on your phone.</sub></p>
 
 ---
 
@@ -123,5 +135,5 @@ bash engine/load_agents.sh              # install the hourly scan + local server
 ---
 
 <div align="center">
-<sub>Built by Aaryan Chawla · MIT licensed · <a href="https://aaryan0909.github.io/career-decision-board/">live demo</a></sub>
+<sub>Built by Aaryan Chawla · MIT licensed · <a href="https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/">live demo</a></sub>
 </div>

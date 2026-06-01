@@ -1,8 +1,8 @@
 # LinkedIn — Project entry + (optional) post
 
 > Fill in the two links once the repo is live:
-> - **https://github.com/aaryan0909/career-decision-board** = `https://github.com/<you>/career-decision-board`
-> - **https://aaryan0909.github.io/career-decision-board/** = `https://<you>.github.io/career-decision-board/`
+> - **https://github.com/aaryan0909/JobAppTracker-Gmail2Offers** = `https://github.com/<you>/JobAppTracker-Gmail2Offers`
+> - **https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/** = `https://<you>.github.io/JobAppTracker-Gmail2Offers/`
 
 ---
 
@@ -16,7 +16,7 @@
 | **Associated with** | (leave blank, or your school if you want) |
 | **Currently working on it** | ✅ Yes (it runs daily) — or set a start month |
 | **Start date** | (the month you started) |
-| **Project URL** | **https://aaryan0909.github.io/career-decision-board/** (the live demo — most clickable) |
+| **Project URL** | **https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/** (the live demo — most clickable) |
 | **Description** | *(paste below)* |
 | **Contributors** | just you |
 
@@ -40,13 +40,19 @@ LLM-for-extraction + deterministic-Python-for-truth, AES-GCM client-side encrypt
 
 Stack: Python, vanilla JS + Web Crypto, Gmail (MCP) via headless Claude, launchd, Vercel.
 
-Live demo: https://aaryan0909.github.io/career-decision-board/   ·   Code: https://github.com/aaryan0909/career-decision-board
+Live demo: https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/   ·   Code: https://github.com/aaryan0909/JobAppTracker-Gmail2Offers
 ```
 
 **Media to attach** (LinkedIn lets you add links/images to a project):
-- The **https://aaryan0909.github.io/career-decision-board/** link (renders a preview card)
-- The **https://github.com/aaryan0909/career-decision-board** link
-- *(optional)* 1–2 screenshots of the demo board / insights view
+- The **https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/** link (renders a preview card)
+- The **https://github.com/aaryan0909/JobAppTracker-Gmail2Offers** link
+- **Screenshots** (in the repo — download from `~/career-tracker/docs/screenshots/` or these raw links, then upload as project media). All use anonymized data, safe to share:
+  - Board: https://raw.githubusercontent.com/aaryan0909/JobAppTracker-Gmail2Offers/main/docs/screenshots/board.png
+  - Insights: https://raw.githubusercontent.com/aaryan0909/JobAppTracker-Gmail2Offers/main/docs/screenshots/insights.png
+  - Pipeline: https://raw.githubusercontent.com/aaryan0909/JobAppTracker-Gmail2Offers/main/docs/screenshots/pipeline.png
+  - Mobile: https://raw.githubusercontent.com/aaryan0909/JobAppTracker-Gmail2Offers/main/docs/screenshots/mobile.png
+
+> **If you post:** attach 2–4 of these images (image posts get more reach). Best combo: **board.png + insights.png**.
 
 **Skills to tag on the project:** Python · JavaScript · Data Pipelines · Automation · Web Crypto / Applied Cryptography · Product Thinking · System Design · Problem Solving
 
@@ -76,8 +82,8 @@ A few things I'm proud of under the hood:
 • client-side AES-GCM encryption so a public URL never exposes private data
 • 100% hands-off — a scheduled agent keeps it current
 
-Live demo (anonymized data) 👉 https://aaryan0909.github.io/career-decision-board/
-Code 👉 https://github.com/aaryan0909/career-decision-board
+Live demo (anonymized data) 👉 https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/
+Code 👉 https://github.com/aaryan0909/JobAppTracker-Gmail2Offers
 
 Built with Python, vanilla JS + Web Crypto, and a scheduled headless agent on Gmail.
 ```
@@ -91,7 +97,7 @@ Career Decision Board: an agent reads my Gmail hourly, tracks every application 
 shows what's actually converting, and ranks what to do next. Laptop + encrypted phone view,
 fully self-updating.
 
-Live demo (anonymized) → https://aaryan0909.github.io/career-decision-board/ · Code → https://github.com/aaryan0909/career-decision-board
+Live demo (anonymized) → https://aaryan0909.github.io/JobAppTracker-Gmail2Offers/ · Code → https://github.com/aaryan0909/JobAppTracker-Gmail2Offers
 ```
 
 **Tips:** post Tue–Thu morning; add 3–5 hashtags (#buildinpublic #python #automation #jobsearch
