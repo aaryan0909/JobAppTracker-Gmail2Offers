@@ -1,23 +1,21 @@
 #!/bin/bash
-# Career tracker — unattended scan + update. Invoked by launchd (and manually).
-# Scans Gmail via headless claude, merges results, refreshes Job Tracker.xlsx + dashboard.
-
-export HOME="/Users/aaaryanchawla"
-# /usr/bin first so `python3` = system python (which has cryptography); claude/node still found later.
-export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:$HOME/.nvm/versions/node/v24.15.0/bin:/usr/local/bin"
-PYTHON="/usr/bin/python3"   # pinned: the python that has openpyxl + cryptography
-
-ENG="$HOME/career-tracker/engine"
-LOGDIR="$HOME/career-tracker/logs"
-PROMPT="$ENG/scan_prompt.md"
-RECORDS="$ENG/new_records.json"
-LOCKDIR="$ENG/.scan.lockdir"
+# Career Decision Board — unattended scan + rebuild.
+# Invoked by launchd / cron / systemd, or manually:  bash scripts/run_scan.sh
+#
+# What it does: scan Gmail (Gmail API) → merge into the SQLite store →
+# rebuild career_data.json (+ encrypted blob) → rebuild the xlsx mirror.
+# Safe to re-run: scans use an overlapping window and the merge is idempotent.
+set -u
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+LOGDIR="${CAREERBOARD_LOGDIR:-$REPO/logs}"
+LOCKDIR="$REPO/engine/.scan.lockdir"
+RECORDS="$REPO/engine/new_records.json"   # optional: drop an LLM-scan file here
 mkdir -p "$LOGDIR"
 STAMP="$(date +%Y%m%d)"
 LOG="$LOGDIR/scan-$STAMP.log"
 say(){ echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG"; }
 
-# single-instance lock via atomic mkdir (macOS has no flock).
+# single-instance lock via atomic mkdir (works on macOS + Linux).
 if ! mkdir "$LOCKDIR" 2>/dev/null; then
   if [ -n "$(find "$LOCKDIR" -maxdepth 0 -mmin +30 2>/dev/null)" ]; then
     rmdir "$LOCKDIR" 2>/dev/null; mkdir "$LOCKDIR" 2>/dev/null || { say "lock busy; exiting."; exit 0; }
@@ -29,36 +27,35 @@ fi
 trap 'rmdir "$LOCKDIR" 2>/dev/null' EXIT
 
 say "── scan start ──"
-command -v claude >/dev/null || { say "ERROR: claude CLI not on PATH"; exit 1; }
+cd "$REPO" || exit 1
+command -v python3 >/dev/null || { say "ERROR: python3 not on PATH"; exit 1; }
 
-rm -f "$RECORDS"
-
-say "invoking claude scanner…"
-claude -p "$(cat "$PROMPT")" --permission-mode bypassPermissions >> "$LOG" 2>&1
-say "claude exit=$?"
-
-if [ ! -s "$RECORDS" ]; then
-  say "no new_records.json produced — nothing to merge (ok if inbox had nothing)."
-  "$PYTHON" "$ENG/career_lib.py" build >> "$LOG" 2>&1
-  "$PYTHON" "$ENG/career_lib.py" xlsx  >> "$LOG" 2>&1
-  say "── scan end (no changes) ──"; exit 0
+# Optional LLM second pass: if new_records.json exists (e.g. produced by the
+# prompt in docs/alternatives/llm-scan.md), merge it first.
+if [ -s "$RECORDS" ]; then
+  if python3 -c "import json; json.load(open('$RECORDS'))" 2>>"$LOG"; then
+    say "merging LLM records…"
+    python3 -m engine.cli ingest "$RECORDS" >>"$LOG" 2>&1 || say "ERROR during LLM ingest"
+    mkdir -p "$REPO/engine/archive"
+    mv "$RECORDS" "$REPO/engine/archive/records-$(date +%Y%m%d-%H%M%S).json"
+  else
+    say "ERROR: $RECORDS is not valid JSON; leaving it for inspection."
+  fi
 fi
 
-if ! "$PYTHON" -c "import json; json.load(open('$RECORDS'))" 2>>"$LOG"; then
-  say "ERROR: new_records.json is not valid JSON; leaving it for inspection."; exit 1
+say "scanning Gmail…"
+if python3 -m engine.cli scan >>"$LOG" 2>&1; then
+  say "gmail scan merged."
+else
+  say "gmail scan reported an error (see above); rebuilding from existing data."
+  python3 -m engine.cli build >>"$LOG" 2>&1
 fi
 
-say "merging records…"
-"$PYTHON" "$ENG/career_lib.py" ingest "$RECORDS" >> "$LOG" 2>&1 && \
-"$PYTHON" "$ENG/career_lib.py" xlsx >> "$LOG" 2>&1
-if [ $? -ne 0 ]; then say "ERROR during ingest/xlsx"; exit 1; fi
+say "rebuilding spreadsheet…"
+python3 -m engine.cli xlsx >>"$LOG" 2>&1 || say "xlsx step reported an error"
 
-mkdir -p "$ENG/archive"
-mv "$RECORDS" "$ENG/archive/records-$(date +%Y%m%d-%H%M%S).json"
-
-# optional deploy (Phase B): push to Vercel so the phone link updates.
-if [ -x "$ENG/deploy.sh" ]; then
-  say "deploying…"; "$ENG/deploy.sh" >> "$LOG" 2>&1 || say "deploy step reported an error"
+if [ -x "$REPO/scripts/deploy.sh" ]; then
+  say "deploying…"; "$REPO/scripts/deploy.sh" >>"$LOG" 2>&1 || say "deploy step reported an error"
 fi
 
-say "── scan end (updated) ──"
+say "── scan end ──"
