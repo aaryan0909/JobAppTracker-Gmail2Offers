@@ -48,6 +48,7 @@
     display:flex;align-items:center;justify-content:space-between;gap:10px}
   header h2{font-size:16px;margin:0;font-weight:700}
   header .stamp{color:var(--mut);font-size:11px;display:flex;align-items:center;gap:6px;margin-top:2px}
+  header .tagline{color:var(--mut);font-size:13px;line-height:1.45;margin-top:3px;max-width:560px}
   .dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
   .dot.fresh{background:var(--acc2);box-shadow:0 0 6px var(--acc2)}
   .dot.aging{background:var(--warn)}
@@ -175,7 +176,7 @@
 <!-- app -->
 <div id="app" class="hidden">
   <header>
-    <div><h2>🧭 Decision Board<span id="samplebadge"></span></h2><div class="stamp" id="stamp"></div></div>
+    <div><h2>🧭 Decision Board<span id="samplebadge"></span></h2><div class="tagline">Reads your job-search emails and turns applications and interviews into one board that tells you what to do next.</div><div class="stamp" id="stamp"></div></div>
     <div style="display:flex;gap:8px;align-items:center">
       <button class="mini" id="refresh" title="Check for fresh data">↻ Refresh</button>
       <button class="mini" id="lock">Lock</button>
