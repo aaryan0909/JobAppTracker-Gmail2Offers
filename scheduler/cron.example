@@ -1,0 +1,14 @@
+# cron alternative to launchd (Linux / macOS without launchd).
+#
+# Install with:  crontab -e
+# then paste the lines below, replacing /path/to/JobAppTracker-Gmail2Offers
+# with the repo location on your machine.
+#
+# Scan Gmail + rebuild the board every hour, at 20 past the hour.
+# Logs: <repo>/logs/scan-YYYYMMDD.log
+20 * * * * /bin/bash /path/to/JobAppTracker-Gmail2Offers/scripts/run_scan.sh
+
+# Serve the local dashboard (alternative to the launchd server agent).
+# Run once in a terminal, or add to your shell startup:
+#   python3 -m http.server 8765 --directory /path/to/JobAppTracker-Gmail2Offers/web
+# then open http://localhost:8765/index.html#preview

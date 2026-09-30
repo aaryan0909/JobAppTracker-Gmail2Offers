@@ -1,0 +1,10 @@
+[Unit]
+Description=Career Decision Board — Gmail scan + rebuild
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# __REPO__ is replaced with the repo path by the install step in docs/SETUP.md
+ExecStart=/bin/bash __REPO__/scripts/run_scan.sh
+WorkingDirectory=__REPO__
