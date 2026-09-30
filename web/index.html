@@ -291,7 +291,7 @@ async function loadPreview(){
   }
 }
 async function boot(){
-  if(location.hash==="#demo"||location.hostname.endsWith("github.io")){ MODE="demo"; return loadDemo(); }
+  if(location.hash==="#demo"||location.hostname.endsWith("github.io")||location.hostname.endsWith("vercel.app")){ MODE="demo"; return loadDemo(); }
   if(location.hash==="#preview"){ MODE="preview"; return loadPreview(); }
   MODE="private";
   const s=sessionStorage.getItem("cb_pw");
