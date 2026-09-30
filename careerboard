@@ -1,38 +1,76 @@
 #!/bin/bash
-# Career Board control panel.  Usage:  ./careerboard <command>
+# Career Decision Board control panel. Run from anywhere:  ./careerboard <command>
 #   now        run a Gmail scan immediately
-#   status     show agents, last scan time, server health
+#   build      rebuild the dashboard artifacts from the store
+#   seed       load clearly-labeled sample data (try the board in 30 seconds)
+#   status     show scheduler agents, last scan time, server health
 #   logs       follow today's scan log
 #   open       open the dashboard in your browser
-#   start      (re)load the launchd agents (server + scheduled scan)
-#   stop       unload the launchd agents
-#   uninstall  stop and remove the launchd agents
-set -e
+#   start      (re)load the launchd agents (server + scheduled scan) [macOS]
+#   stop       unload the launchd agents [macOS]
+#   uninstall  stop and remove the launchd agents [macOS]
+#   test       run the unit-test suite
+set -u
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ENG="$REPO/engine"
 U=$(id -u)
-ENG="$HOME/career-tracker/engine"
-LA="$HOME/Library/LaunchAgents"
-PY="/usr/bin/python3"
-case "$1" in
+PY="python3"
+
+case "${1:-}" in
   now)
-    echo "Triggering a scan now (takes ~2–4 min while it reads Gmail)…"
-    launchctl kickstart -k "gui/$U/com.aaryan.careerboard.scan" 2>/dev/null \
-      || bash "$ENG/run_scan.sh"
-    echo "Started. Watch progress with:  ./careerboard logs" ;;
+    echo "Triggering a scan now (reads Gmail via the Gmail API)…"
+    if command -v launchctl >/dev/null 2>&1; then
+      launchctl kickstart -k "gui/$U/com.careerboard.scan" 2>/dev/null \
+        || bash "$REPO/scripts/run_scan.sh"
+    else
+      bash "$REPO/scripts/run_scan.sh"
+    fi
+    echo "Done. Watch progress with:  ./careerboard logs" ;;
+  build)
+    cd "$REPO" && $PY -m engine.cli build ;;
+  seed)
+    cd "$REPO" && $PY -m engine.cli seed
+    echo "Open the board:  ./careerboard open" ;;
   status)
-    echo "── agents ──"; launchctl list | grep careerboard || echo "(not loaded — run ./careerboard start)"
-    echo "── server ──"; curl -s -o /dev/null -w "http://localhost:8765 → HTTP %{http_code}\n" http://localhost:8765/index.html || true
-    echo "── data ──"; $PY -c "import json,os;d=json.load(open(os.path.expanduser('~/career-tracker/engine/store.json')));print('applications:',len(d['applications']),'| interviews:',len(d['interviews']),'| leads:',len(d.get('leads',[])),'| last scan:',d['cursor']['last_scan_iso'])" ;;
+    echo "── scheduler ──"
+    if command -v launchctl >/dev/null 2>&1; then
+      launchctl list | grep careerboard || echo "(not loaded — run ./careerboard start)"
+    else
+      echo "(launchctl not available — see scheduler/ for cron/systemd options)"
+    fi
+    echo "── server ──"
+    curl -s -o /dev/null -w "http://localhost:8765 → HTTP %{http_code}\n" http://localhost:8765/index.html 2>/dev/null || echo "(local server not running)"
+    echo "── data ──"
+    CAREERBOARD_DB="${CAREERBOARD_DB:-$ENG/careerboard.db}" $PY - <<'EOF'
+import json, os, sqlite3
+db = os.environ["CAREERBOARD_DB"]
+if not os.path.exists(db):
+    print("(empty database — run ./careerboard seed or ./careerboard now)")
+else:
+    c = sqlite3.connect(db)
+    na = c.execute("SELECT COUNT(*) FROM applications").fetchone()[0]
+    ni = c.execute("SELECT COUNT(*) FROM interviews").fetchone()[0]
+    nl = c.execute("SELECT COUNT(*) FROM leads").fetchone()[0]
+    cur = c.execute("SELECT value FROM kv WHERE key='last_scan_iso'").fetchone()
+    print(f"applications: {na} | interviews: {ni} | leads: {nl} | last scan: {cur[0] if cur else 'never'}")
+EOF
+    ;;
   logs)
-    tail -f "$HOME/career-tracker/logs/scan-$(date +%Y%m%d).log" ;;
+    tail -f "$REPO/logs/scan-$(date +%Y%m%d).log" ;;
   open)
-    open "http://localhost:8765/index.html#preview" ;;
+    URL="http://localhost:8765/index.html#preview"
+    if command -v open >/dev/null 2>&1; then open "$URL";
+    elif command -v xdg-open >/dev/null 2>&1; then xdg-open "$URL";
+    else echo "$URL"; fi ;;
   start)
-    bash "$ENG/load_agents.sh" ;;
+    bash "$REPO/scripts/install_launchd.sh" ;;
   stop)
-    for L in server scan; do launchctl bootout "gui/$U/com.aaryan.careerboard.$L" 2>/dev/null && echo "stopped $L"; done ;;
+    for L in server scan; do launchctl bootout "gui/$U/com.careerboard.$L" 2>/dev/null && echo "stopped $L"; done ;;
   uninstall)
-    for L in server scan; do launchctl bootout "gui/$U/com.aaryan.careerboard.$L" 2>/dev/null; rm -f "$LA/com.aaryan.careerboard.$L.plist"; done
-    echo "Agents removed. Project files left intact in ~/career-tracker." ;;
+    for L in server scan; do launchctl bootout "gui/$U/com.careerboard.$L" 2>/dev/null; rm -f "$HOME/Library/LaunchAgents/com.careerboard.$L.plist"; done
+    echo "Agents removed. Project files left intact in $REPO." ;;
+  test)
+    cd "$REPO" && $PY -m unittest discover -s tests ;;
   *)
-    echo "Usage: ./careerboard {now|status|logs|open|start|stop|uninstall}" ;;
+    echo "Usage: ./careerboard {now|build|seed|status|logs|open|start|stop|uninstall|test}" ;;
 esac
