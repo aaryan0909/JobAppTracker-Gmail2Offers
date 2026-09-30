@@ -1,19 +1,22 @@
-# ───────── secrets ─────────
+# ───────── secrets (NEVER commit) ─────────
 engine/.passphrase
+engine/credentials.json
+engine/token.json
 **/.vercel/
 *.token
 
 # ───────── personal data (NEVER publish) ─────────
-# store.json holds real applications/contacts
+# careerboard.db holds your real applications/contacts
+engine/careerboard.db
 engine/store.json
-# seed_store.py contains real recruiter emails (bootstrap only)
-engine/seed_store.py
+engine/store.json.migrated
 engine/new_records.json
 engine/archive/
 # real plaintext dashboard data
 web/career_data.json
-# encrypted with the real password — do not publish
+# encrypted with your real password — do not publish
 web/data.enc.json
+# local spreadsheet mirror
 Job Tracker.xlsx
 
 # ───────── runtime / generated ─────────
@@ -22,5 +25,9 @@ engine/.scan.lock
 engine/.scan.lockdir
 .DS_Store
 **/.DS_Store
+__pycache__/
+**/__pycache__/
+.pytest_cache/
 
-# committed on purpose: web/demo-data.json and docs/ (fully anonymized demo)
+# committed on purpose: web/demo-data.json and docs/demo-data.json
+# (fully anonymized or synthetic demo data)

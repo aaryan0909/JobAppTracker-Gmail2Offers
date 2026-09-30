@@ -1,0 +1,12 @@
+# Core engine needs only the Python stdlib (sqlite3, imaplib, unittest…).
+# Everything below is optional, by feature:
+
+# Job Tracker.xlsx mirror  (`python -m engine.cli xlsx`)
+openpyxl
+
+# Encrypted phone deployment  (`python -m engine.cli build` → web/data.enc.json)
+cryptography
+
+# Gmail API scans  (`python -m engine.cli scan`)
+google-api-python-client
+google-auth-oauthlib

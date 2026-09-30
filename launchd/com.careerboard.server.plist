@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList/1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Template: install with scripts/install_launchd.sh, which fills in
+       @HOME@ and @REPO@ for the current user.
+       Serves the local dashboard at http://localhost:8765 (zero friction). -->
+  <key>Label</key><string>com.careerboard.server</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/python3</string>
+    <string>-m</string>
+    <string>http.server</string>
+    <string>8765</string>
+    <string>--directory</string>
+    <string>@REPO@/web</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key><string>@HOME@</string>
+  </dict>
+  <key>RunAtLoad</key><true/>
+  <key>KeepAlive</key><true/>
+  <key>ProcessType</key><string>Background</string>
+  <key>StandardOutPath</key><string>@REPO@/logs/launchd-server.out</string>
+  <key>StandardErrorPath</key><string>@REPO@/logs/launchd-server.err</string>
+</dict>
+</plist>
